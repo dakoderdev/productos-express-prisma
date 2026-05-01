@@ -23,4 +23,11 @@ app.get('/products', async (req, res) => {
   res.json(products);
 });
 
+app.get('/categories', async (req, res) => {
+  const categories = await prisma.category.findMany({
+    include: { products: true }
+  });
+  res.json(categories);
+});
+
 app.listen(PORT, () => console.log('Server running on port ' + PORT));

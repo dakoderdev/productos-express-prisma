@@ -3,23 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <title>Productos APP ORM</title>
 </head>
 <body>
   <h1>Products</h1>
   <ul id="list"></ul>
 
   <script>
-    fetch('/products')
-      .then(r => r.json())
-      .then(data => {
-        const ul = document.getElementById('list');
-        data.forEach(p => {
-          const li = document.createElement('li');
-          li.textContent = `${p.name} - $${p.price}`;
-          ul.appendChild(li);
-        });
+  fetch('/products')
+    .then(r => r.json())
+    .then(data => {
+      const ul = document.getElementById('list');
+
+      data.forEach(p => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <span class="li__name">${p.name}</span>
+          <span class="li__tag">${p.category.name}</span>
+          <span class="li__price">$${p.price}</span>
+        `;
+        ul.appendChild(li);
       });
-  </script>
+    });
+</script>
 </body>
 </html>
