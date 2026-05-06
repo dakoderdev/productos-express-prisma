@@ -15,10 +15,41 @@ model Product {
   createdAt DateTime @default(now())
   category Category @relation(fields: [categoryId], references: [id])
   categoryId Int
+  orderItems OrderItem[]
 }
 
 model Category {
   id Int @id @default(autoincrement())
   name String
   products Product[]
+}
+
+//User 1:N Ordenes
+model User {
+  id Int @id @default(autoincrement())
+  firstName String
+  lastName String
+  email String
+  createdAt DateTime @default(now())
+  password String @default("placeholder")
+  orders Order[]
+}
+
+//Order 1:N Product
+model Order {
+    id Int @id @default(autoincrement())
+    user User @relation(fields: [userId], references: [id])
+    userId Int
+    createdAt DateTime @default(now())
+    items OrderItem[]
+}
+
+model OrderItem {
+  id Int @id @default(autoincrement())
+  order Order @relation(fields: [orderId], references: [id])
+  orderId   Int
+  product Product @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int @default(1)
+  price Int 
 }

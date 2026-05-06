@@ -8,21 +8,41 @@
     <title>Productos APP ORM</title>
 </head>
 <body>
-  <h1>Products</h1>
-  <ul id="list"></ul>
+  <nav>
+    <ul class="menu__ul">
+      <li>
+        <a class="menu__a--current" href="index.html">Productos</a>
+      </li>
+      <li>
+        <a href="orden.html">Ordenes</a>
+      </li>
+    </ul>
+    <button class="nav__button">
+      <img class="nav__user-img" src="https://i.pravatar.cc/300?img=57" alt="Foto de Perfil">
+    </button>
+  </nav>
+  <main><ul id="list__product"></ul></main>
 
   <script>
   fetch('/products')
     .then(r => r.json())
     .then(data => {
-      const ul = document.getElementById('list');
+      const ul = document.getElementById('list__product'); 
 
       data.forEach(p => {
+        const price = p.price.toLocaleString("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).replace(/\s/g, '');
         const li = document.createElement('li');
+        li.className = 'li__card';
+
         li.innerHTML = `
+          <div>
           <span class="li__name">${p.name}</span>
           <span class="li__tag">${p.category.name}</span>
-          <span class="li__price">$${p.price}</span>
+          </div>
+          <div>
+          <span class="li__price">${price}</span>
+          <button class="li__button">Agregar al carrito</button>
+          </div>
         `;
         ul.appendChild(li);
       });

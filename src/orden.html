@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <title>Ordenes APP ORM</title>
+</head>
+<body>
+  <nav>
+    <ul class="menu__ul">
+      <li>
+        <a class="" href="index.html">Productos</a>
+      </li>
+      <li>
+        <a class="menu__a--current" href="orden.html">Ordenes</a>
+      </li>
+    </ul>
+    <button class="nav__button">
+      <img class="nav__user-img" src="https://i.pravatar.cc/300?img=57" alt="Foto de Perfil">
+    </button>
+  </nav>
+  <main><ul id="list__order"></ul></main>
+
+  <script>
+  fetch('/orders')
+    .then(async r => {
+      const data = await r.json();
+
+      if (!r.ok) {
+        throw new Error(data.error || 'No se pudieron cargar las ordenes');
+      }
+
+      return data;
+    })
+    .then(data => {
+      const ul = document.getElementById('list__order');
+      ul.innerHTML = '';
+
+      if (!Array.isArray(data)) {
+        ul.innerHTML = '<li class="li__order">Formato de datos no valido</li>';
+        return; 
+      }
+
+      data.forEach(order => {
+        const li = document.createElement('li');
+        li.className = 'li__order';
+
+        const date = new Date(order.createdAt).toLocaleDateString('es-ES');
+        const price = (price) => price.toLocaleString("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).replace(/\s/g, '');        
+        const itemsList = order.items && order.items.length > 0 
+          ? order.items.map(i => `<li class="order__item"><span>${i.product.name} <strong>x${i.quantity}</strong></span><span>${price(i.price)}</span></li>`).join('')
+          : '<li>Sin productos</li>';
+        let totalPrice = 0;
+        totalPrice += order.items.reduce((acc, i) => acc + i.price * i.quantity, 0);
+        totalPrice = price(totalPrice);
+
+        li.innerHTML = `
+          <div class="li__container">
+            <div class="li__header">
+            <span class="li__title">Orden <strong class="li__number">#${order.id}</strong></span>
+            <p class="li__date">${date}</p>
+            </div>
+            <ul class="order__list">
+                ${itemsList}
+                ${order.items && order.items.length > 0 
+                    ? `<li class="order__item order__item--total"><span>Total </span><span>${totalPrice}</span></li>` 
+                    : ''}    
+            </ul>
+            <p class="li__user">${order.user.firstName} ${order.user.lastName}</p>
+          </div>
+        `;
+        ul.appendChild(li);
+      });
+    })
+    .catch(err => {
+      console.error("Error en la peticion:", err);
+      const ul = document.getElementById('list__order');
+      ul.innerHTML = `<li class="li__order">${err.message}</li>`;
+    });
+</script>
+</body>
+</html>

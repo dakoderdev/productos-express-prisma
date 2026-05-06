@@ -30,4 +30,31 @@ app.get('/categories', async (req, res) => {
   res.json(categories);
 });
 
+app.get('/orders', async (req, res) => {
+  try {
+    const orders = await prisma.order.findMany({
+      include: {
+        items: { 
+          include: {
+            product: true 
+          }
+        },
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            createdAt: true
+          }
+        } 
+      }
+    });
+    res.json(orders);
+  } catch (error) {
+    console.error("Error al obtener ordenes:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
 app.listen(PORT, () => console.log('Server running on port ' + PORT));
