@@ -57,4 +57,45 @@ app.get('/orders', async (req, res) => {
   }
 });
 
+app.post("/checkout", async (req, res) => {
+  const { userId, currentItems } = req.body;
+  try {
+    const order = await prisma.$transaction(async (tx) => {
+      const newOrder = await tx.order.create({
+        data: { userId: 1 }
+      });
+
+      for (const item of currentItems) {
+        const product = await tx.product.findUnique({
+          where: { id: item.id }
+        });
+
+        if (!product) throw new Error("Product not found");
+        if (product.quantity < item.quantity) throw new Error("Not enough stock");
+
+        await tx.orderItem.create({
+          data: {
+            orderId: newOrder.id,
+            productId: product.id,
+            quantity: item.quantity,
+            price: product.price
+          }
+        });
+
+        await tx.product.update({
+          where: { id: product.id },
+          data: { quantity: { decrement: item.quantity } }
+        });
+      }
+
+      return newOrder;
+    });
+
+    res.json({ success: true, orderId: order.id });
+  } catch (error) {
+    console.error("Checkout failed:", error);
+    res.status(500).json({ error: error.message || "Checkout failed" });
+  }
+});
+
 app.listen(PORT, () => console.log('Server running on port ' + PORT));

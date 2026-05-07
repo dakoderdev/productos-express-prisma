@@ -18,35 +18,23 @@
       </li>
     </ul>
     <button class="nav__button">
-      <img class="nav__user-img" src="https://i.pravatar.cc/300?img=57" alt="Foto de Perfil">
+      <fig class="nav__figure">
+        <img class="nav__user-img" src="https://i.pravatar.cc/300?img=57" alt="Foto de Perfil">
+      </fig>
+      <p class="nav__user-name">Nombre<br>Apellido</p>
     </button>
   </nav>
-  <main><ul id="list__product"></ul></main>
+  <main>
+    <ul id="list__product"></ul>
+    <button id="buy__order" class="add__button">Comprar Carrito</button>
+    <dialog id="buy__menu" class="buy__menu">
+      <button id="buy__close">×</button>
+      <p class="buy__title">Carrito</p>
+      <ul id="buy__list"></ul>
+      <button id="buy__button">Comprar</button>
+    </dialog>
+  </main>
 
-  <script>
-  fetch('/products')
-    .then(r => r.json())
-    .then(data => {
-      const ul = document.getElementById('list__product'); 
-
-      data.forEach(p => {
-        const price = p.price.toLocaleString("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).replace(/\s/g, '');
-        const li = document.createElement('li');
-        li.className = 'li__card';
-
-        li.innerHTML = `
-          <div>
-          <span class="li__name">${p.name}</span>
-          <span class="li__tag">${p.category.name}</span>
-          </div>
-          <div>
-          <span class="li__price">${price}</span>
-          <button class="li__button">Agregar al carrito</button>
-          </div>
-        `;
-        ul.appendChild(li);
-      });
-    });
-</script>
+  <script type="module" src="scripts/index.js"></script>
 </body>
 </html>
