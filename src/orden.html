@@ -8,33 +8,34 @@
     <title>Ordenes APP ORM</title>
   </head>
   <body>
-    <nav>
-      <ul class="menu__ul">
-        <li>
-          <a class="" href="index.html">Productos</a>
+    <nav class="nav">
+      <ul class="menu__list">
+        <li class="menu__item">
+          <a class="menu__link" href="index.html">Productos</a>
         </li>
-        <li>
-          <a class="menu__a--current" href="orden.html">Ordenes</a>
+        <li class="menu__item">
+          <a class="menu__link menu__link--current" href="orden.html">Ordenes</a>
         </li>
       </ul>
       <button class="nav__button">
-        <fig class="nav__figure">
-          <img class="nav__user-img" src="https://i.pravatar.cc/300?img=57" alt="Foto de Perfil">
-        </fig>
-        <p class="nav__user-name">Nombre<br>Apellido</p>
+        <figure class="nav__avatar-wrap">
+          <img class="nav__avatar" src="https://i.pravatar.cc/300?img=0" alt="Foto de Perfil">
+        </figure>
+        <p class="nav__name">Nombre<br>Apellido</p>
       </button>
     </nav>
-    <main>
-        <ul id="section__order"></ul>
-        <button id="buy__order" class="add__button">Comprar Carrito</button>
-        <dialog id="buy__menu" class="buy__menu">
-          <button id="buy__close">×</button>
-          <p class="buy__title">Carrito</p>
-          <ul id="buy__list"></ul>
-          <button id="buy__button">Comprar</button>
-        </dialog>
+    <main class="page">
+      <ul id="orders-list" class="orders__list"></ul>
+      <button id="cart-open" class="cart__open">Comprar Carrito</button>
+      <dialog id="cart-dialog" class="cart__dialog">
+        <button id="cart-close" class="cart__close">x</button>
+        <p class="cart__title">Carrito</p>
+        <ul id="cart-list" class="cart__list"></ul>
+        <button id="cart-submit" class="cart__submit">Comprar</button>
+      </dialog>
     </main>
 
     <script type="module" src="./scripts/orden.js"></script>
+    <script type="module" src="/scripts/user.js"></script>
   </body>
 </html>

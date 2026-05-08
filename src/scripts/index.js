@@ -29,37 +29,42 @@ function addItem(productId) {
   } else {
     currentItems.push({ id: productId, quantity: 1 });
   }
-  console.log(currentItems);
   saveCart(currentItems);
 }
 
 const formatPrice = (price) => price.toLocaleString("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).replace(/\s/g, "");
 
+function getCategoryModifier(categoryName) {
+  return categoryName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
 function renderProducts() {
-  const ul = document.getElementById("list__product");
+  const ul = document.getElementById("products-list");
 
   fetch("/products")
     .then((r) => r.json())
     .then((data) => {
       data.forEach((p) => {
         const li = document.createElement("li");
-        li.className = "li__card";
+        li.className = "product-card";
+
+        const categoryModifier = getCategoryModifier(p.category.name);
 
         li.innerHTML = `
-        <div>
-          <span class="li__name">${p.name}</span>
-          <span class="li__tag li__tag--${p.category.name.toLowerCase()}">${p.category.name}</span>
-        </div>
-        <div>
-          <span class="li__price">${formatPrice(p.price)}</span>
-          <button id="li__${p.id}" class="li__button li__button--add">Agregar al carrito</button>
-        </div>
-      `;
+          <div class="product-card__header">
+            <span class="product-card__name">${p.name}</span>
+            <span class="product-card__tag product-card__tag--${categoryModifier}">${p.category.name}</span>
+          </div>
+          <div class="product-card__footer">
+            <span class="product-card__price">${formatPrice(p.price)}</span>
+            <button id="product-add-${p.id}" class="product-card__button product-card__button--add">Agregar al carrito</button>
+          </div>
+        `;
 
         ul.appendChild(li);
       });
 
-      const buttons = document.querySelectorAll(".li__button--add");
+      const buttons = document.querySelectorAll(".product-card__button--add");
 
       if (buttons) {
         buttons.forEach((button) => {
@@ -70,32 +75,31 @@ function renderProducts() {
       }
     })
     .catch((err) => {
-      ul.innerHTML = `<li>${err.message}</li>`;
+      ul.innerHTML = `<li class="orders__message">${err.message}</li>`;
     });
 }
 
 function handleAddClick(productId) {
-  productId = parseInt(productId.replace("li__", ""));
+  productId = parseInt(productId.replace("product-add-", ""));
   addItem(productId);
   renderCart(currentItems);
 }
 
-const cartButton = document.getElementById("buy__order");
+const cartButton = document.getElementById("cart-open");
 
 cartButton.addEventListener("click", () => {
   openCartDialog(currentItems, products);
 });
 
-const buyClose = document.getElementById("buy__close");
-buyClose.addEventListener("click", () => {
+const cartClose = document.getElementById("cart-close");
+cartClose.addEventListener("click", () => {
   closeCartDialog();
 });
 
-const buyButton = document.getElementById("buy__button");
-buyButton.addEventListener("click", async () => {
+const cartSubmit = document.getElementById("cart-submit");
+cartSubmit.addEventListener("click", async () => {
   const success = await buyCart(currentItems);
   if (!success) return;
   currentItems = [];
   renderCart(currentItems);
 });
-

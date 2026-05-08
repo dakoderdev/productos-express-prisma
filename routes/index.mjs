@@ -3,6 +3,8 @@ import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 const { PrismaClient } = pkg;
 import express from 'express';
+import session from 'express-session';
+import bcrypt from 'bcrypt';
 
 const PORT = 3000;
 const adapter = new PrismaPg({
@@ -15,6 +17,13 @@ const app = express();
 
 app.use(express.json());
 app.use(express.static('src'));
+
+app.use(session({
+  secret: 'dev_secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false }
+}));
 
 app.get('/products', async (req, res) => {
   const products = await prisma.product.findMany({
@@ -31,12 +40,18 @@ app.get('/categories', async (req, res) => {
 });
 
 app.get('/orders', async (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: "Tenes que iniciar sesion para ver tus ordenes" });
+  }
+
   try {
     const orders = await prisma.order.findMany({
+      where: { userId: req.session.userId },
+      orderBy: { createdAt: 'desc' },
       include: {
-        items: { 
+        items: {
           include: {
-            product: true 
+            product: true
           }
         },
         user: {
@@ -47,7 +62,7 @@ app.get('/orders', async (req, res) => {
             email: true,
             createdAt: true
           }
-        } 
+        }
       }
     });
     res.json(orders);
@@ -58,11 +73,20 @@ app.get('/orders', async (req, res) => {
 });
 
 app.post("/checkout", async (req, res) => {
-  const { userId, currentItems } = req.body;
+  const { currentItems } = req.body;
+
+  if (!req.session.userId) {
+    return res.status(401).json({ error: "Tenes que iniciar sesion para comprar" });
+  }
+
+  if (!Array.isArray(currentItems) || currentItems.length === 0) {
+    return res.status(400).json({ error: "El carrito esta vacio" });
+  }
+
   try {
     const order = await prisma.$transaction(async (tx) => {
       const newOrder = await tx.order.create({
-        data: { userId: 1 }
+        data: { userId: req.session.userId }
       });
 
       for (const item of currentItems) {
@@ -96,6 +120,52 @@ app.post("/checkout", async (req, res) => {
     console.error("Checkout failed:", error);
     res.status(500).json({ error: error.message || "Checkout failed" });
   }
+});
+
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await prisma.user.findFirst({ where: { email } });
+    if (!user) return res.status(401).json({ error: 'Credenciales invalidas' });
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) return res.status(401).json({ error: 'Credenciales invalidas' });
+    req.session.userId = user.id;
+    res.json({ id: user.id, firstName: user.firstName, lastName: user.lastName });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error interno' });
+  }
+});
+
+app.post('/register', async (req, res) => {
+  const { firstName, lastName, email, password } = req.body;
+  try {
+    const existing = await prisma.user.findFirst({ where: { email } });
+    if (existing) return res.status(400).json({ error: 'Email ya registrado' });
+    const hashed = await bcrypt.hash(password, 10);
+    const user = await prisma.user.create({
+      data: { firstName, lastName, email, password: hashed }
+    });
+    req.session.userId = user.id;
+    res.json({ id: user.id, firstName: user.firstName, lastName: user.lastName });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error interno' });
+  }
+});
+
+app.post('/logout', (req, res) => {
+  req.session.destroy((error) => {
+    if (error) return res.status(500).json({ error: 'No se pudo cerrar sesion' });
+    res.json({ success: true });
+  });
+});
+
+app.get('/me', async (req, res) => {
+  if (!req.session.userId) return res.status(401).json({ error: 'No autenticado' });
+  const user = await prisma.user.findUnique({ where: { id: req.session.userId } });
+  if (!user) return res.status(401).json({ error: 'No autenticado' });
+  res.json({ id: user.id, firstName: user.firstName, lastName: user.lastName });
 });
 
 app.listen(PORT, () => console.log('Server running on port ' + PORT));
