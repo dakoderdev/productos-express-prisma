@@ -50,7 +50,7 @@ function renderOrders() {
         article.className = "order-card";
 
         const date = new Date(order.createdAt).toLocaleDateString("es-ES");
-        const itemsList = order.items && order.items.length > 0 ? order.items.map((i) => `<li class="order-card__item"><span>${i.product.name} <strong class="order-card__quantity">x${i.quantity}</strong></span><span>${formatPrice(i.price)}</span></li>`).join("") : `<li class="order-card__item">Sin productos</li>`;
+        const itemsList = order.items && order.items.length > 0 ? order.items.map((i) => `<li class="order-card__item"><span>${i.product.name} <strong class="order-card__category">${i.product.category.name}</strong></span><span>${formatPrice(i.price)}<strong class="order-card__quantity">x${i.quantity}</strong></span></li>`).join("") : `<li class="order-card__item">Sin productos</li>`;
 
         let totalPrice = 0;
         totalPrice += order.items.reduce((acc, i) => acc + i.price * i.quantity, 0);

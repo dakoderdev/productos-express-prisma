@@ -1,19 +1,28 @@
 import pkg from '../generated/prisma/index.js';
 import 'dotenv/config';
-import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 const { PrismaClient } = pkg;
 import express from 'express';
 import session from 'express-session';
 import bcrypt from 'bcrypt';
 
 const PORT = 3000;
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL,
-});
-const prisma = new PrismaClient({
-  adapter,
-});
+const adapter = new PrismaMariaDb(getDatabaseConfig());
+const prisma = new PrismaClient({ adapter });
 const app = express();
+
+function getDatabaseConfig() {
+  const url = new URL(process.env.DATABASE_URL);
+
+  return {
+    host: url.hostname,
+    port: Number(url.port) || 3306,
+    user: decodeURIComponent(url.username),
+    password: decodeURIComponent(url.password),
+    database: url.pathname.replace("/", ""),
+    allowPublicKeyRetrieval: true
+  };
+}
 
 app.use(express.json());
 app.use(express.static('src'));
@@ -51,7 +60,11 @@ app.get('/orders', async (req, res) => {
       include: {
         items: {
           include: {
-            product: true
+            product: {
+              include: {
+                category: true
+              }
+            }
           }
         },
         user: {
