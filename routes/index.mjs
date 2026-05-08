@@ -96,6 +96,9 @@ app.post("/checkout", async (req, res) => {
 
         if (!product) throw new Error("Product not found");
         if (product.quantity < item.quantity) throw new Error("Not enough stock");
+        if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+          throw new Error("Cantidad invalida");
+        }
 
         await tx.orderItem.create({
           data: {

@@ -64,6 +64,10 @@ body {
   height: 2rem;
 }
 
+.nav__avatar-wrap:has(.nav__avatar--default), .nav__avatar-wrap:has(.nav__avatar--loading) {
+  display: none;
+}
+
 .nav__avatar {
   width: 100%;
   height: 100%;
@@ -71,6 +75,7 @@ body {
   border: 1px solid var(--border);
   object-fit: cover;
 }
+
 
 .nav__name {
   font-size: 0.625rem;

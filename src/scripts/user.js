@@ -74,6 +74,7 @@ async function logout() {
   }
 
   setLoggedOutState();
+  window.location.reload();
 }
 
 async function handleAuthResponse(res) {
@@ -83,6 +84,8 @@ async function handleAuthResponse(res) {
   }
 
   setLoggedInState(res.data);
+
+  window.location.reload();
 }
 
 async function requestData(url) {
@@ -134,12 +137,14 @@ function setLoggedInState(user) {
   updateName(user.firstName, user.lastName);
   updateImg(user.id);
   updateButtonState("logged-in");
+  userImg.classList.remove("nav__avatar--default");
   userButton.onclick = logout;
 }
 
 function setLoggedOutState() {
   updateName(DEFAULT_USER.firstName, DEFAULT_USER.lastName);
   userImg.setAttribute("src", DEFAULT_USER.img);
+  userImg.classList.add("nav__avatar--default");
   updateButtonState("logged-out");
   userButton.onclick = login;
 }
